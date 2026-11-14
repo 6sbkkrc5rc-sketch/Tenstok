@@ -25,7 +25,7 @@ header{padding:22px 4px 14px}h1{font-size:23px;margin:0 0 6px;letter-spacing:.5p
 .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.metric{background:#0a1726;border:1px solid #21364f;border-radius:11px;padding:10px}.metric small{color:var(--muted);font-size:10px;display:block}.metric b{font-size:16px;display:block;margin-top:5px}
 .indicator-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.indicator{display:flex;justify-content:space-between;background:#0a1726;border-radius:9px;padding:9px 10px;font-size:12px}.indicator span{color:var(--muted)}
 .note{color:var(--muted);font-size:11px;line-height:1.65}.status{font-size:12px;color:var(--cyan);margin:7px 0;min-height:18px}
-table{border-collapse:collapse;width:100%;font-size:11px}th,td{padding:8px 5px;border-bottom:1px solid #24374d;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:var(--muted);font-weight:650}
+table{border-collapse:collapse;width:100%;font-size:11px}.pivot-table{font-size:16.5px}.pivot-table th,.pivot-table td{font-size:16.5px;padding:11px 7px}th,td{padding:8px 5px;border-bottom:1px solid #24374d;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:var(--muted);font-weight:650}
 .scroll{overflow:auto}.pill{display:inline-block;border-radius:20px;padding:3px 7px;font-size:10px;background:#20344b;color:#c8dcf2}
 input[type=file]{display:none}.footer{text-align:center;color:#72849b;font-size:10px;padding:15px}
 @media(max-width:390px){.price{font-size:26px}.grid2{gap:7px}.scorebox{padding:10px}.metrics{grid-template-columns:repeat(3,1fr)}.metric b{font-size:14px}}
@@ -67,6 +67,18 @@ input[type=file]{display:none}.footer{text-align:center;color:#72849b;font-size:
  <p class="note">圖表顯示每日收盤指數與 60 日均線。此資料源不提供可用的加權指數成交量，因此本系統不以成交量製造訊號。</p>
 </section>
 
+<section class="card" id="forecastCard">
+ <div class="section-title"><span>🔮 下一交易日方向研判</span><span class="pill" id="forecastDate">等待資料</span></div>
+ <div class="price-row" style="align-items:center;margin:8px 0 12px"><div><div class="sub">明日方向傾向（非保證預測）</div><div id="forecastBias" style="font-size:27px;font-weight:900;margin-top:5px">等待資料</div></div><div style="text-align:right"><div class="sub">方向訊號強度</div><div id="forecastStrength" style="font-size:22px;font-weight:850">—</div></div></div>
+ <div class="metrics">
+  <div class="metric"><small>偏多訊號</small><b id="forecastBull">—</b></div>
+  <div class="metric"><small>偏空訊號</small><b id="forecastBear">—</b></div>
+  <div class="metric"><small>近 20 日波動</small><b id="forecastVol">—</b></div>
+ </div>
+ <p class="note" id="forecastRange" style="margin-top:10px">等待足夠歷史資料。</p>
+ <p class="note" id="forecastReason">此研判依最新收盤資料、均線、MACD、RSI、KD 與短線動能計算；僅提供方向傾向，不代表明日一定漲跌，也不是投資建議。</p>
+</section>
+
 <section class="card">
  <div class="section-title">🔬 技術指標儀表</div>
  <div class="metrics">
@@ -88,7 +100,7 @@ input[type=file]{display:none}.footer{text-align:center;color:#72849b;font-size:
 <section class="card">
  <div class="section-title">🏔️ 歷史大底／大頂（事後確認）</div>
  <p class="note">歷史轉折以局部極值及後續反向幅度確認，僅供研究。歷史標記使用未來一段期間的走勢確認，不能視為當時已知訊號。</p>
- <div class="scroll"><table><thead><tr><th>類型</th><th>日期</th><th>指數</th><th>後 20 日變化</th><th>後續確認幅度</th></tr></thead><tbody id="pivotRows"><tr><td colspan="5" style="text-align:center">等待資料</td></tr></tbody></table></div>
+ <div class="scroll"><table class="pivot-table"><thead><tr><th>類型</th><th>日期</th><th>指數</th><th>後 20 日變化</th><th>後續確認幅度</th></tr></thead><tbody id="pivotRows"><tr><td colspan="5" style="text-align:center">等待資料</td></tr></tbody></table></div>
 </section>
 
 <section class="card">
@@ -202,6 +214,28 @@ function findPivots(){
  }
  out.sort((a,b)=>b.i-a.i);return out.slice(0,12);
 }
+function forecastNextDay(x){
+ const i=rows.length-1,p=x.c[i],bull=[],bear=[];
+ if(i<25){$('forecastBias').textContent='資料不足';$('forecastStrength').textContent='—';$('forecastBull').textContent='—';$('forecastBear').textContent='—';$('forecastVol').textContent='—';$('forecastRange').textContent='至少需要 25 個交易日資料才能研判。';$('forecastReason').textContent='';return}
+ const m20=x.ma20[i],m60=x.ma60[i],r=x.rsi[i],k=x.K[i],d=x.D[i],hist=x.hist[i],prevHist=x.hist[i-1],day=pct(p,x.c[i-1]);
+ if(m20!=null){(p>=m20?bull:bear).push(p>=m20?'收盤站上月線':'收盤低於月線')}
+ if(m60!=null){(p>=m60?bull:bear).push(p>=m60?'收盤站上季線':'收盤低於季線')}
+ if(m20!=null&&m60!=null){(m20>=m60?bull:bear).push(m20>=m60?'月線高於季線':'月線低於季線')}
+ if(hist!=null){(hist>=0?bull:bear).push(hist>=0?'MACD 柱體偏多':'MACD 柱體偏空');if(prevHist!=null)(hist>=prevHist?bull:bear).push(hist>=prevHist?'MACD 動能增強':'MACD 動能減弱')}
+ if(r!=null){if(r>=50&&r<=68)bull.push('RSI 多方區');else if(r<35)bull.push('RSI 超賣反彈條件');else if(r>72)bear.push('RSI 過熱');else if(r<45)bear.push('RSI 偏弱')}
+ if(k!=null&&d!=null)(k>=d?bull:bear).push(k>=d?'KD K 值高於 D 值':'KD K 值低於 D 值');
+ if(day!=null)(day>=0?bull:bear).push(day>=0?'最近一日收紅':'最近一日收黑');
+ const diff=bull.length-bear.length,abs=Math.abs(diff);let bias='盤整觀望',color='var(--gold)',strength='弱';
+ if(diff>=2){bias='偏多';color='var(--red)';strength=abs>=4?'較強':'中等'}else if(diff<=-2){bias='偏空';color='var(--green)';strength=abs>=4?'較強':'中等'}
+ $('forecastBias').textContent=bias;$('forecastBias').style.color=color;$('forecastStrength').textContent=strength;$('forecastBull').textContent=bull.length+' 項';$('forecastBear').textContent=bear.length+' 項';
+ const rets=[];for(let z=Math.max(1,i-19);z<=i;z++)rets.push((x.c[z]/x.c[z-1]-1)*100);
+ const avg=rets.reduce((a,b)=>a+b,0)/rets.length,sd=Math.sqrt(rets.reduce((a,b)=>a+(b-avg)**2,0)/rets.length);
+ $('forecastVol').textContent=fmt(sd,2)+'%';
+ const lo=p*(1-sd/100),hi=p*(1+sd/100);
+ $('forecastDate').textContent='依 '+rows[i].date+' 收盤資料';
+ $('forecastRange').textContent='短線波動參考區間：約 '+fmt(lo,0)+' ～ '+fmt(hi,0)+' 點（以前一日收盤為中心，採近 20 日每日報酬標準差估算；不是目標價或保證區間）。';
+ $('forecastReason').textContent='偏多依據：'+(bull.join('、')||'無')+'。偏空依據：'+(bear.join('、')||'無')+'。若兩方差距小，表示訊號不明確。此模型不使用尚未發生的明日資料，也無法預知突發消息。';
+}
 function backtest(x){
  let vals=[],signals=0;
  for(let i=80;i<rows.length-21;i++){let s=scoreAt(i,x);if(s.b>=45){signals++;vals.push(pct(rows[i+20].close,rows[i].close))}}
@@ -219,7 +253,7 @@ function render(){
  Object.keys(fields).forEach(k=>$(k).textContent=fields[k]);
  let pos=x.bbUp[i]&&x.bbLow[i]?(p-x.bbLow[i])/(x.bbUp[i]-x.bbLow[i])*100:null;$('bbpos').textContent=fmt(pos,1)+'%';$('bbands').textContent=fmt(x.bbUp[i],0)+' / '+fmt(x.bbLow[i],0);
  const piv=findPivots();$('pivotRows').innerHTML=piv.length?piv.map(v=>`<tr><td><span style="color:${v.type==='大底'?'#43dfa8':'#ffbd5b'}">${v.type}</span></td><td>${rows[v.i].date}</td><td>${fmt(v.price,0)}</td><td>${v.p20===null?'—':fmt(v.p20,2)+'%'}</td><td>${fmt(v.rev,1)}%</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center">目前沒有符合門檻的轉折樣本</td></tr>';
- backtest(x);drawChart(x);
+ forecastNextDay(x);backtest(x);drawChart(x);
 }
 function drawChart(x){
  const c=$('chart'),ctx=c.getContext('2d'),w=c.clientWidth,h=c.clientHeight,dpr=window.devicePixelRatio||1;c.width=w*dpr;c.height=h*dpr;ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);
