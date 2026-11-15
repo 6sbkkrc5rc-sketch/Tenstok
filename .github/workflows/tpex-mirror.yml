@@ -1,0 +1,32 @@
+name: NEXUS TPEx Free Mirror
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 11 * * 1-5"
+
+permissions:
+  contents: write
+
+jobs:
+  update-tpex:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 下載專案
+        uses: actions/checkout@v4
+
+      - name: 使用 Python 抓取櫃買中心官方行情
+        run: python scripts/update_tpex.py
+
+      - name: 儲存公開 JSON 中介檔
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/tpex_daily.json
+          if git diff --cached --quiet; then
+            echo "行情檔沒有變更，略過提交"
+          else
+            git commit -m "Update TPEx daily market data"
+            git push
+          fi
