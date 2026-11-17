@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="NEXUS反轉雷達">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>NEXUS｜台股十年反轉雷達 3.0</title>
+<title>NEXUS｜台股十年反轉雷達 3.1</title>
 <style>
 :root{--bg:#07111f;--panel:#101d2e;--panel2:#14243a;--line:#263a54;--text:#edf4ff;--muted:#9fb0c6;--cyan:#48d7e8;--green:#38d996;--red:#ff667d;--gold:#f7c65b;--blue:#6ca8ff}
 *{box-sizing:border-box}html{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif}body{margin:0;padding:env(safe-area-inset-top) 12px calc(22px + env(safe-area-inset-bottom));max-width:1000px;margin-inline:auto;background:linear-gradient(160deg,#091727,#050b14 65%);min-height:100vh}
@@ -30,7 +30,7 @@ input[type=file]{display:none}.footer{text-align:center;color:#72849b;font-size:
 </style>
 </head>
 <body>
-<header><div class="topline"><div><h1>🧭 NEXUS｜台股大盤十年反轉雷達</h1><p>TAIEX · D1 十年歷史 · 底部布局與高峰風險監控</p></div><span class="badge">RADAR 3.0</span></div></header>
+<header><div class="topline"><div><h1>🧭 NEXUS｜台股大盤十年反轉雷達</h1><p>TAIEX · D1 十年歷史 · 底部布局與高峰風險監控</p></div><span class="badge">RADAR 3.1</span></div></header>
 <div class="toolbar">
  <button class="btn primary" id="loadBtn">更新十年資料</button>
  <button class="btn" id="csvOut">匯出 CSV</button>
@@ -43,7 +43,7 @@ input[type=file]{display:none}.footer{text-align:center;color:#72849b;font-size:
 </section>
 <div class="grid2">
  <section class="card scorebox entry"><div class="score-head"><b>🟢 底部進場分數</b><span class="pill">0–100</span></div><div class="score" id="bottomScore">—</div><div class="meter"><span id="bottomMeter" style="width:0%"></span></div><div class="signal" id="bottomLabel">等待資料</div><p class="note" id="bottomReason">評估超跌、均線乖離、RSI/KD、MACD及布林位置。</p></section>
- <section class="card scorebox exit"><div class="score-head"><b>🟠 高峰停利風險</b><span class="pill">0–100</span></div><div class="score" id="topScore">—</div><div class="meter"><span id="topMeter" style="width:0%"></span></div><div class="signal" id="topLabel">等待資料</div><p class="note" id="topReason">評估過熱、均線乖離、RSI/KD及高檔轉弱。</p></section>
+ <section class="card scorebox exit"><div class="score-head"><b>🟠 高峰停利風險</b><span class="pill">0–100</span></div><div class="score" id="topScore">—</div><div class="meter"><span id="topMeter" style="width:0%"></span></div><div class="signal" id="topLabel">等待資料</div><p class="note" id="topReason">評估過熱、漲幅延伸、接近高點及高檔轉弱。</p></section>
 </div>
 <section class="card"><div class="section-title"><span>📈 十年指數走勢</span><span class="pill">收盤＋季線</span></div><div class="chart-wrap"><canvas id="chart"></canvas></div><div class="legend"><span><i class="dot" style="background:#48d7e8"></i>收盤指數</span><span><i class="dot" style="background:#f7c65b"></i>MA60</span></div><p class="note">圖表顯示最近最多 500 個交易日。資料源成交量為 0，因此不使用成交量製造訊號。</p></section>
 <section class="card"><div class="section-title"><span>🔮 下一交易日方向研判</span><span class="pill" id="forecastDate">等待資料</span></div>
@@ -55,11 +55,15 @@ input[type=file]{display:none}.footer{text-align:center;color:#72849b;font-size:
  </div><div class="indicator-list" style="margin-top:9px"><div class="indicator"><span>月線 MA20</span><b id="ma20">—</b></div><div class="indicator"><span>季線 MA60</span><b id="ma60">—</b></div><div class="indicator"><span>距 60 日低點</span><b id="fromLow">—</b></div><div class="indicator"><span>布林上／下軌</span><b id="bbands">—</b></div></div>
 </section>
 <section class="card"><div class="section-title">🏔️ 歷史大底／大頂（事後確認）</div><p class="note">採局部極值及其後 60 個交易日反向幅度確認。這是事後標記，不代表當時即可知道轉折。</p><div class="scroll"><table class="pivot-table"><thead><tr><th>類型</th><th>日期</th><th>指數</th><th>後 20 日變化</th><th>後續確認幅度</th></tr></thead><tbody id="pivotRows"><tr><td colspan="5" style="text-align:center">等待資料</td></tr></tbody></table></div></section>
-<section class="card"><div class="section-title">🧪 訊號回測摘要</div><div class="metrics">
+<section class="card"><div class="section-title">🧪 底部訊號回測</div><div class="metrics">
  <div class="metric"><small>底部訊號次數</small><b id="btCount">—</b></div><div class="metric"><small>20 日平均報酬</small><b id="btAvg20">—</b></div><div class="metric"><small>20 日正報酬比例</small><b id="btWin20">—</b></div>
- </div><div class="scroll" style="margin-top:12px"><table><thead><tr><th>觀察期間</th><th>有效樣本</th><th>平均報酬</th><th>正報酬比例</th></tr></thead><tbody id="btRows"><tr><td colspan="4">等待資料</td></tr></tbody></table></div><p class="note" id="btNote" style="margin-top:10px">使用當日可計算的指標門檻，觀察其後 20／40／60 個交易日；未計交易成本，訊號可能重疊。</p></section>
+ </div><div class="scroll" style="margin-top:12px"><table><thead><tr><th>觀察期間</th><th>有效樣本</th><th>平均報酬</th><th>正報酬比例</th></tr></thead><tbody id="btRows"><tr><td colspan="4">等待資料</td></tr></tbody></table></div></section>
+<section class="card"><div class="section-title">🟠 高峰訊號回測</div><div class="metrics">
+ <div class="metric"><small>高峰訊號次數</small><b id="topBtCount">—</b></div><div class="metric"><small>20 日平均報酬</small><b id="topBtAvg20">—</b></div><div class="metric"><small>20 日負報酬比例</small><b id="topBtLoss20">—</b></div>
+ </div><div class="scroll" style="margin-top:12px"><table><thead><tr><th>觀察期間</th><th>有效樣本</th><th>平均報酬</th><th>負報酬比例</th></tr></thead><tbody id="topBtRows"><tr><td colspan="4">等待資料</td></tr></tbody></table></div><p class="note">高峰訊號以當日收盤可取得的資料計算，觀察其後 20／40／60 個交易日；負報酬比例越高，代表訊號後下跌樣本越多。未計交易成本，訊號可能重疊。</p></section>
+<section class="card"><div class="section-title">📅 最近反轉警示日期</div><p class="note">列出最近達到底部或高峰警示門檻的交易日。分數是觀察訊號，不代表必然反轉。</p><div class="scroll"><table><thead><tr><th>類型</th><th>日期</th><th>收盤</th><th>分數</th><th>主要理由</th></tr></thead><tbody id="signalRows"><tr><td colspan="5">等待資料</td></tr></tbody></table></div></section>
 <section class="card"><div class="section-title">⚙️ 資料與判讀說明</div><p class="note" id="dataInfo">資料來源：Cloudflare D1。按更新即可讀取整份歷史資料，不再逐月下載 TWSE。</p><p class="note">底部／高峰分數是多項技術條件的加總觀察值，不是保證買賣點。成交量欄位目前為 0，暫不納入任何指標。請搭配風險控管，不因單一分數一次投入或全部出清。</p></section>
-<div class="footer">NEXUS TAIEX REVERSAL RADAR 3.0 · D1 history · 僅供研究參考</div>
+<div class="footer">NEXUS TAIEX REVERSAL RADAR 3.1 · D1 history · 僅供研究參考</div>
 <script>
 'use strict';
 const API='https://nexus-market-data.rds8p245zj.workers.dev/';
@@ -82,7 +86,7 @@ async function updateData(){
   const incoming=normalizeData(json.data);
   if(incoming.length<100)throw Error('讀取筆數不足：'+incoming.length);
   rows=incoming;localStorage.setItem(STORE,JSON.stringify(rows));render();
-  $('dataInfo').textContent='資料來源：'+(json.source||'Cloudflare D1')+'；API 回報 '+(json.count??incoming.length)+' 筆，實際整理 '+incoming.length+' 筆。期間 '+(json.firstDate||rows[0].date)+' ～ '+(json.lastDate||rows.at(-1).date)+'。';
+  $('dataInfo').textContent='資料來源：'+(json.source||'Cloudflare D1')+'；API 回報 '+(json.count??incoming.length)+' 筆，實際整理 '+incoming.length+' 筆。期間 '+(json.firstDate||rows[0].date)+' ～ '+(json.lastDate||rows[rows.length-1].date)+'。';
   setStatus('更新成功：已從 Cloudflare D1 讀取 '+incoming.length.toLocaleString('zh-TW')+' 筆資料。');
  }catch(e){setStatus('更新失敗：'+(e.name==='AbortError'?'連線逾時，請稍後重試':e.message));console.error(e)}
  finally{btn.disabled=false;btn.textContent='更新十年資料'}
@@ -92,22 +96,44 @@ function ema(a,n){let out=Array(a.length).fill(null),k=2/(n+1),v=null;a.forEach(
 function calc(){
  const c=rows.map(x=>x.close),h=rows.map(x=>x.high),l=rows.map(x=>x.low),n=c.length,ma20=[],ma60=[];
  for(let i=0;i<n;i++){ma20.push(sma(c,20,i));ma60.push(sma(c,60,i))}
- let rsi=Array(n).fill(null),gain=0,loss=0;if(n>14){for(let i=1;i<=14;i++){let d=c[i]-c[i-1];gain+=Math.max(d,0);loss+=Math.max(-d,0)}gain/=14;loss/=14;rsi[14]=loss===0?100:100-100/(1+gain/loss);for(let i=15;i<n;i++){let d=c[i]-c[i-1];gain=(gain*13+Math.max(d,0))/14;loss=(loss*13+Math.max(-d,0))/14;rsi[i]=loss===0?100:100-100/(1+gain/loss)}}
- let K=50,D=50,ka=Array(n).fill(null),da=Array(n).fill(null);for(let i=8;i<n;i++){let hh=Math.max(...h.slice(i-8,i+1)),ll=Math.min(...l.slice(i-8,i+1)),r=hh===ll?50:(c[i]-ll)/(hh-ll)*100;K=(2*K+r)/3;D=(2*D+K)/3;ka[i]=K;da[i]=D}
+ let rsi=Array(n).fill(null),gain=0,loss=0;
+ if(n>14){for(let i=1;i<=14;i++){let d=c[i]-c[i-1];gain+=Math.max(d,0);loss+=Math.max(-d,0)}gain/=14;loss/=14;rsi[14]=loss===0?100:100-100/(1+gain/loss);for(let i=15;i<n;i++){let d=c[i]-c[i-1];gain=(gain*13+Math.max(d,0))/14;loss=(loss*13+Math.max(-d,0))/14;rsi[i]=loss===0?100:100-100/(1+gain/loss)}}
+ let K=50,D=50,ka=Array(n).fill(null),da=Array(n).fill(null);
+ for(let i=8;i<n;i++){let hh=Math.max(...h.slice(i-8,i+1)),ll=Math.min(...l.slice(i-8,i+1)),r=hh===ll?50:(c[i]-ll)/(hh-ll)*100;K=(2*K+r)/3;D=(2*D+K)/3;ka[i]=K;da[i]=D}
  let e12=ema(c,12),e26=ema(c,26),mac=e12.map((v,i)=>v-e26[i]),sig=ema(mac,9),hist=mac.map((v,i)=>v-sig[i]),bbUp=[],bbLow=[];
  for(let i=0;i<n;i++){let av=sma(c,20,i);if(av===null){bbUp.push(null);bbLow.push(null)}else{let v=0;for(let z=i-19;z<=i;z++)v+=(c[z]-av)**2;let sd=Math.sqrt(v/20);bbUp.push(av+2*sd);bbLow.push(av-2*sd)}}
  return {c,h,l,ma20,ma60,rsi,K:ka,D:da,macd:mac,signal:sig,hist,bbUp,bbLow};
 }
 function scoreAt(i,x){
- const p=x.c[i],m20=x.ma20[i],m60=x.ma60[i],r=x.rsi[i],k=x.K[i],d=x.D[i],lo=x.bbLow[i],up=x.bbUp[i];let b=0,t=0,br=[],tr=[];
- if(r!=null){if(r<25){b+=22;br.push('RSI 極度超賣')}else if(r<35){b+=16;br.push('RSI 超賣')}else if(r<45)b+=7;if(r>75){t+=22;tr.push('RSI 過熱')}else if(r>68){t+=14;tr.push('RSI 偏熱')}}
- if(m20){let z=(p/m20-1)*100;if(z<-8){b+=15;br.push('低於月線 '+fmt(-z,1)+'%')}else if(z<-4)b+=8;if(z>8){t+=14;tr.push('高於月線 '+fmt(z,1)+'%')}else if(z>4)t+=7}
- if(m60){let z=(p/m60-1)*100;if(z<-12){b+=15;br.push('低於季線 '+fmt(-z,1)+'%')}else if(z<-6)b+=8;if(z>15){t+=15;tr.push('高於季線 '+fmt(z,1)+'%')}else if(z>8)t+=8}
- if(k!=null&&d!=null){if(k<20&&k>d){b+=14;br.push('KD 低檔轉強')}else if(k<20)b+=7;if(k>80&&k<d){t+=14;tr.push('KD 高檔轉弱')}else if(k>85)t+=7}
- if(lo&&p<lo){b+=14;br.push('跌破布林下軌')}else if(lo&&p<lo*1.02)b+=6;
- if(up&&p>up){t+=14;tr.push('突破布林上軌')}else if(up&&p>up*.98)t+=6;
+ const p=x.c[i],m20=x.ma20[i],m60=x.ma60[i],r=x.rsi[i],k=x.K[i],d=x.D[i],lo=x.bbLow[i],up=x.bbUp[i];
+ let b=0,t=0,br=[],tr=[];
+ if(r!=null){
+  if(r<25){b+=22;br.push('RSI 極度超賣')}else if(r<35){b+=16;br.push('RSI 超賣')}else if(r<45)b+=7;
+  if(r>75){t+=22;tr.push('RSI 過熱')}else if(r>68){t+=14;tr.push('RSI 偏熱')}
+ }
+ if(m20!=null&&m20>0){let z=(p/m20-1)*100;
+  if(z<-8){b+=15;br.push('低於月線 '+fmt(-z,1)+'%')}else if(z<-4)b+=8;
+  if(z>8){t+=14;tr.push('高於月線 '+fmt(z,1)+'%')}else if(z>4){t+=7;tr.push('高於月線 '+fmt(z,1)+'%')}
+ }
+ if(m60!=null&&m60>0){let z=(p/m60-1)*100;
+  if(z<-12){b+=15;br.push('低於季線 '+fmt(-z,1)+'%')}else if(z<-6)b+=8;
+  if(z>15){t+=15;tr.push('高於季線 '+fmt(z,1)+'%')}else if(z>8){t+=8;tr.push('高於季線 '+fmt(z,1)+'%')}
+ }
+ if(k!=null&&d!=null){
+  if(k<20&&k>d){b+=14;br.push('KD 低檔轉強')}else if(k<20)b+=7;
+  if(k>80&&k<d){t+=14;tr.push('KD 高檔轉弱')}else if(k>85){t+=7;tr.push('KD 高檔區')}
+ }
+ if(lo!=null&&lo>0){if(p<lo){b+=14;br.push('跌破布林下軌')}else if(p<lo*1.02)b+=6}
+ if(up!=null&&up>0){if(p>up){t+=14;tr.push('突破布林上軌')}else if(p>up*.98){t+=6;tr.push('接近布林上軌')}}
  if(i>1&&x.macd[i]<x.signal[i]&&x.macd[i-1]>=x.signal[i-1]){t+=10;tr.push('MACD 死亡交叉')}
  if(i>1&&x.macd[i]>x.signal[i]&&x.macd[i-1]<=x.signal[i-1]){b+=10;br.push('MACD 黃金交叉')}
+ // 新增：近期漲幅延伸。只計算已完成的 20 個交易日，不預測未來。
+ if(i>=20){let gain20=pct(p,x.c[i-20]);if(gain20>=12){t+=12;tr.push('近 20 日急漲 '+fmt(gain20,1)+'%')}else if(gain20>=8){t+=8;tr.push('近 20 日漲幅偏大 '+fmt(gain20,1)+'%')}}
+ // 新增：接近 60 日高點時，若動能已偏熱才加風險分，避免單純創新高就誤判。
+ let hi60=Math.max(...x.h.slice(Math.max(0,i-59),i+1)),nearHigh=hi60>0?(p/hi60-1)*100:null;
+ if(nearHigh!=null&&nearHigh>=-1.5&&((r!=null&&r>=60)||(x.hist[i]<x.hist[i-1]))){t+=6;tr.push('接近 60 日高點且動能轉弱/偏熱')}
+ // 新增：MACD 柱體連續縮短，代表上漲動能降溫；不單憑一天變化判定。
+ if(i>=2&&x.hist[i]<x.hist[i-1]&&x.hist[i-1]<x.hist[i-2]&&x.hist[i]>0){t+=6;tr.push('MACD 多方動能連續降溫')}
  return {b:Math.min(100,b),t:Math.min(100,t),br,tr};
 }
 function findPivots(){
@@ -125,20 +151,39 @@ function forecast(x){
  if(m20!=null&&m60!=null)(m20>=m60?bull:bear).push(m20>=m60?'月線高於季線':'月線低於季線');
  (hist>=0?bull:bear).push(hist>=0?'MACD 柱體偏多':'MACD 柱體偏空');
  if(r!=null){if(r>=50&&r<=68)bull.push('RSI 多方區');else if(r<35)bull.push('RSI 超賣區');else if(r>72)bear.push('RSI 過熱');else if(r<45)bear.push('RSI 偏弱')}
- if(k!=null&&d!=null)(k>=d?bull:bear).push(k>=d?'KD 偏多':'KD 偏空');(day>=0?bull:bear).push(day>=0?'最近一日上漲':'最近一日下跌');
- let diff=bull.length-bear.length,bias='盤整觀望',color='var(--gold)',strength='弱';if(diff>=2){bias='偏多';color='var(--red)';strength=Math.abs(diff)>=4?'較強':'中等'}else if(diff<=-2){bias='偏空';color='var(--green)';strength=Math.abs(diff)>=4?'較強':'中等'}
+ if(k!=null&&d!=null)(k>=d?bull:bear).push(k>=d?'KD 偏多':'KD 偏空');
+ (day>=0?bull:bear).push(day>=0?'最近一日上漲':'最近一日下跌');
+ let diff=bull.length-bear.length,bias='盤整觀望',color='var(--gold)',strength='弱';
+ if(diff>=2){bias='偏多';color='var(--red)';strength=Math.abs(diff)>=4?'較強':'中等'}else if(diff<=-2){bias='偏空';color='var(--green)';strength=Math.abs(diff)>=4?'較強':'中等'}
  $('forecastBias').textContent=bias;$('forecastBias').style.color=color;$('forecastStrength').textContent=strength;$('forecastBull').textContent=bull.length+' 項';$('forecastBear').textContent=bear.length+' 項';
- let rets=[];for(let z=Math.max(1,i-19);z<=i;z++)rets.push((x.c[z]/x.c[z-1]-1)*100);let avg=rets.reduce((a,b)=>a+b,0)/rets.length,sd=Math.sqrt(rets.reduce((a,b)=>a+(b-avg)**2,0)/rets.length);
+ let rets=[];for(let z=Math.max(1,i-19);z<=i;z++)rets.push((x.c[z]/x.c[z-1]-1)*100);
+ let avg=rets.reduce((a,b)=>a+b,0)/rets.length,sd=Math.sqrt(rets.reduce((a,b)=>a+(b-avg)**2,0)/rets.length);
  $('forecastVol').textContent=fmt(sd,2)+'%';$('forecastDate').textContent='依 '+rows[i].date+' 收盤';$('forecastRange').textContent='近 20 日單日報酬標準差 '+fmt(sd,2)+'%；以前收為中心的 ±1 倍波動參考約 '+fmt(p*(1-sd/100),0)+'～'+fmt(p*(1+sd/100),0)+' 點，非目標價。';
  $('forecastReason').textContent='偏多：'+(bull.join('、')||'無')+'。偏空：'+(bear.join('、')||'無')+'。此為技術條件統計，不是保證預測。'
 }
 function backtest(x){
- let signals=[];for(let i=80;i<rows.length-61;i++)if(scoreAt(i,x).b>=45)signals.push(i);
- $('btCount').textContent=signals.length;let html='';
- for(let days of [20,40,60]){let vals=signals.filter(i=>i+days<rows.length).map(i=>pct(x.c[i+days],x.c[i])).filter(Number.isFinite),avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null,win=vals.length?vals.filter(v=>v>0).length/vals.length*100:null;
-  html+=`<tr><td>${days} 交易日</td><td>${vals.length}</td><td>${fmt(avg,2)}%</td><td>${fmt(win,1)}%</td></tr>`;
-  if(days===20){$('btAvg20').textContent=fmt(avg,2)+'%';$('btWin20').textContent=fmt(win,1)+'%'}
- }$('btRows').innerHTML=html;
+ let bottomSignals=[],topSignals=[];
+ for(let i=80;i<rows.length-61;i++){let s=scoreAt(i,x);if(s.b>=45)bottomSignals.push(i);if(s.t>=35)topSignals.push(i)}
+ $('btCount').textContent=bottomSignals.length;$('topBtCount').textContent=topSignals.length;
+ function build(signals,isTop){
+  let html='',summary=null;
+  for(let days of [20,40,60]){
+   let vals=signals.filter(i=>i+days<rows.length).map(i=>pct(x.c[i+days],x.c[i])).filter(Number.isFinite);
+   let avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null;
+   let ratio=vals.length?(isTop?vals.filter(v=>v<0).length:vals.filter(v=>v>0).length)/vals.length*100:null;
+   html+=`<tr><td>${days} 交易日</td><td>${vals.length}</td><td>${fmt(avg,2)}%</td><td>${fmt(ratio,1)}%</td></tr>`;
+   if(days===20)summary={avg,ratio};
+  }
+  return {html,summary};
+ }
+ let b=build(bottomSignals,false),t=build(topSignals,true);
+ $('btRows').innerHTML=b.html;$('btAvg20').textContent=fmt(b.summary.avg,2)+'%';$('btWin20').textContent=fmt(b.summary.ratio,1)+'%';
+ $('topBtRows').innerHTML=t.html;$('topBtAvg20').textContent=fmt(t.summary.avg,2)+'%';$('topBtLoss20').textContent=fmt(t.summary.ratio,1)+'%';
+ // 顯示最近 15 筆達門檻訊號，按日期由新到舊。
+ let recent=[];
+ for(let i=80;i<rows.length;i++){let s=scoreAt(i,x);if(s.b>=45)recent.push({type:'底部',i,score:s.b,reason:s.br.join('、')||'底部條件'});if(s.t>=35)recent.push({type:'高峰',i,score:s.t,reason:s.tr.join('、')||'高峰條件'})}
+ recent.sort((a,b)=>b.i-a.i||b.score-a.score);
+ $('signalRows').innerHTML=recent.length?recent.slice(0,15).map(v=>`<tr><td style="color:${v.type==='底部'?'#43dfa8':'#ffbd5b'}">${v.type}</td><td>${rows[v.i].date}</td><td>${fmt(x.c[v.i],0)}</td><td>${Math.round(v.score)}</td><td style="text-align:left;white-space:normal;min-width:170px">${v.reason}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center">目前沒有達到警示門檻的訊號</td></tr>';
 }
 function render(){
  if(!rows.length)return;let x=calc(),i=rows.length-1,p=x.c[i],s=scoreAt(i,x),change=pct(p,x.c[i-1]);
@@ -147,7 +192,8 @@ function render(){
  $('bottomScore').textContent=Math.round(s.b);$('bottomMeter').style.width=s.b+'%';$('bottomLabel').textContent=s.b>=65?'強烈留意分批布局':s.b>=45?'留意布局機會':s.b>=25?'觀察等待':'尚未出現明顯底部條件';$('bottomReason').textContent=s.br.join(' · ')||'目前超跌條件不集中。';
  $('topScore').textContent=Math.round(s.t);$('topMeter').style.width=s.t+'%';$('topLabel').textContent=s.t>=65?'高檔風險偏高，留意分批停利':s.t>=45?'開始留意高檔風險':s.t>=25?'觀察過熱跡象':'尚未出現明顯高峰條件';$('topReason').textContent=s.tr.join(' · ')||'目前高檔過熱條件不集中。';
  const fields={rsi:fmt(x.rsi[i],1),kval:fmt(x.K[i],1),dval:fmt(x.D[i],1),macd:fmt(x.hist[i],2),ma20:fmt(x.ma20[i],2),ma60:fmt(x.ma60[i],2),fromHigh:fmt(pct(p,Math.max(...x.h.slice(Math.max(0,i-59),i+1))),2)+'%',fromLow:fmt(pct(p,Math.min(...x.l.slice(Math.max(0,i-59),i+1))),2)+'%'};
- Object.entries(fields).forEach(([k,v])=>$(k).textContent=v);let pos=x.bbUp[i]&&x.bbLow[i]?(p-x.bbLow[i])/(x.bbUp[i]-x.bbLow[i])*100:null;$('bbpos').textContent=fmt(pos,1)+'%';$('bbands').textContent=fmt(x.bbUp[i],0)+' / '+fmt(x.bbLow[i],0);
+ Object.entries(fields).forEach(([k,v])=>$(k).textContent=v);
+ let pos=x.bbUp[i]&&x.bbLow[i]?(p-x.bbLow[i])/(x.bbUp[i]-x.bbLow[i])*100:null;$('bbpos').textContent=fmt(pos,1)+'%';$('bbands').textContent=fmt(x.bbUp[i],0)+' / '+fmt(x.bbLow[i],0);
  let piv=findPivots();$('pivotRows').innerHTML=piv.length?piv.map(v=>`<tr><td style="color:${v.type==='大底'?'#43dfa8':'#ffbd5b'}">${v.type}</td><td>${rows[v.i].date}</td><td>${fmt(v.price,0)}</td><td>${v.p20===null?'—':fmt(v.p20,2)+'%'}</td><td>${fmt(v.rev,1)}%</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center">目前沒有符合門檻的轉折樣本</td></tr>';
  forecast(x);backtest(x);drawChart(x);
 }
