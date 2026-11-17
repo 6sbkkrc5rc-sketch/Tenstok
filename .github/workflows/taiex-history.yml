@@ -1,1 +1,30 @@
+name: NEXUS TAIEX 10Y History Mirror
 
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: 下載專案
+        uses: actions/checkout@v4
+
+      - name: 抓取證交所官方十年大盤歷史
+        run: python scripts/update_taiex.py
+
+      - name: 儲存歷史 JSON 中介檔
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/taiex_history.json
+          if git diff --cached --quiet; then
+            echo "歷史資料沒有變更，略過提交"
+          else
+            git commit -m "Add TAIEX 10-year history mirror"
+            git push
+          fi
